@@ -16,8 +16,6 @@ import (
 )
 
 // KeysController manages account keys
-
-// KeysController manages account keys
 type ETHKeysController struct {
 	App chainlink.Application
 }
@@ -42,6 +40,7 @@ func (ekc *ETHKeysController) Index(c *gin.Context) {
 			return
 		}
 
+		linkAddress := common.HexToAddress(store.Config.LinkContractAddress())
 		linkBalance, err := store.EthClient.GetLINKBalance(linkAddress, key.Address.Address())
 		if err != nil {
 			err = errors.Errorf("error calling getLINKBalance on Ethereum node: %v", err)
@@ -93,7 +92,8 @@ func (ekc *ETHKeysController) Create(c *gin.Context) {
 	if err != nil {
 		logger.Errorf("error calling getEthBalance on Ethereum node: %v", err)
 	}
-	linkBalance, err := ekc.App.GetStore().TxManager.GetLINKBalance(account.Address)
+	linkAddress := common.HexToAddress(ekc.App.GetStore().Config.LinkContractAddress())
+	linkBalance, err := ekc.App.GetStore().EthClient.GetLINKBalance(linkAddress, account.Address)
 	if err != nil {
 		logger.Errorf("error calling getLINKBalance on Ethereum node: %v", err)
 	}
@@ -160,7 +160,8 @@ func (ekc *ETHKeysController) Delete(c *gin.Context) {
 	if err != nil {
 		logger.Errorf("error calling getEthBalance on Ethereum node: %v", err)
 	}
-	linkBalance, err := ekc.App.GetStore().TxManager.GetLINKBalance(address)
+	linkAddress := common.HexToAddress(ekc.App.GetStore().Config.LinkContractAddress())
+	linkBalance, err := ekc.App.GetStore().EthClient.GetLINKBalance(linkAddress, address)
 	if err != nil {
 		logger.Errorf("error calling getLINKBalance on Ethereum node: %v", err)
 	}
@@ -210,7 +211,8 @@ func (ekc *ETHKeysController) Import(c *gin.Context) {
 		return
 	}
 
-	linkBalance, err := store.TxManager.GetLINKBalance(acct.Address)
+	linkAddress := common.HexToAddress(ekc.App.GetStore().Config.LinkContractAddress())
+	linkBalance, err := store.EthClient.GetLINKBalance(linkAddress, acct.Address)
 	if err != nil {
 		err = errors.Errorf("error calling getLINKBalance on Ethereum node: %v", err)
 		jsonAPIError(c, http.StatusInternalServerError, err)
